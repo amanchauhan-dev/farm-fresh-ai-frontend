@@ -141,8 +141,8 @@ export default function HomePage() {
                             <Link href="/about" className="text-gray-700 hover:text-green-600 w-full" onClick={() => setMobileMenuOpen(false)}>
                                 About
                             </Link>
-                           
-                   
+
+
 
                             {!userId ?
                                 <>
@@ -367,7 +367,7 @@ export default function HomePage() {
                                 Start Shopping
                             </Link>
                         </Button>
-                        <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-green-600" asChild>
+                        <Button size="lg" variant="outline" className=" border-green-600  hover:bg-white !text-green-600" asChild>
                             <Link href="/subscription">
                                 Subscribe Now
                             </Link>
