@@ -5,8 +5,15 @@ import { Badge } from "@/components/ui/badge"
 import { Leaf, ShoppingCart, Truck, Users, Star, ArrowRight, CheckCircle } from 'lucide-react'
 import Link from "next/link"
 import Image from "next/image"
+
+import { useState } from "react"
+import { Menu, X } from "lucide-react"
+
+
+
 import { useAuth } from "@clerk/nextjs"
 import { UserButton } from "@clerk/clerk-react"
+
 
 const featuredProducts = [
     {
@@ -66,18 +73,27 @@ const subscriptionPlans = [
 ]
 
 export default function HomePage() {
+
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
     const { userId } = useAuth()
+
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-green-50 to-white">
             {/* Navigation */}
+
+
             <nav className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
                 <div className="container mx-auto px-4 py-4">
                     <div className="flex items-center justify-between">
+                        {/* Logo */}
                         <div className="flex items-center space-x-2">
                             <Leaf className="h-8 w-8 text-green-600" />
                             <span className="text-2xl font-bold text-green-800">FarmFresh AI</span>
                         </div>
+
+                        {/* Desktop Menu */}
                         <div className="hidden md:flex items-center space-x-6">
                             <Link href="/marketplace" className="text-gray-700 hover:text-green-600 transition-colors">
                                 Marketplace
@@ -88,6 +104,7 @@ export default function HomePage() {
                             <Link href="/about" className="text-gray-700 hover:text-green-600 transition-colors">
                                 About
                             </Link>
+
                             {!userId ?
                                 <>
                                     <Link href={'/sign-in'} className="border-green-600 text-green-600 hover:bg-green-50">
@@ -102,9 +119,49 @@ export default function HomePage() {
                                 <UserButton />
                             }
                         </div>
+
+                        {/* Mobile Menu Button */}
+                        <button
+                            className="md:hidden text-green-600"
+                            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                        >
+                            {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+                        </button>
                     </div>
+
+                    {/* Mobile Menu Content */}
+                    {mobileMenuOpen && (
+                        <div className="md:hidden mt-4 space-y-4 flex flex-col items-start">
+                            <Link href="/marketplace" className="text-gray-700 hover:text-green-600 w-full" onClick={() => setMobileMenuOpen(false)}>
+                                Marketplace
+                            </Link>
+                            <Link href="/subscription" className="text-gray-700 hover:text-green-600 w-full" onClick={() => setMobileMenuOpen(false)}>
+                                Subscription
+                            </Link>
+                            <Link href="/about" className="text-gray-700 hover:text-green-600 w-full" onClick={() => setMobileMenuOpen(false)}>
+                                About
+                            </Link>
+                           
+                   
+
+                            {!userId ?
+                                <>
+                                    <Link href={'/sign-in'} className="border-green-600 text-green-600 hover:bg-green-50">
+                                        Sign In
+                                    </Link>
+                                    <Button asChild className="bg-green-600 hover:bg-green-700">
+                                        <Link href={'/sign-in'} className="border-green-600 text-green-600 hover:bg-green-50">
+                                            Get Started
+                                        </Link>
+                                    </Button>
+                                </> :
+                                <UserButton />
+                            }
+                        </div>
+                    )}
                 </div>
             </nav>
+
 
             {/* Hero Section */}
             <section className="py-20 px-4">
