@@ -5,9 +5,14 @@ import { Badge } from "@/components/ui/badge"
 import { Leaf, ShoppingCart, Truck, Users, Star, ArrowRight, CheckCircle } from 'lucide-react'
 import Link from "next/link"
 import Image from "next/image"
+
 import { useState } from "react"
 import { Menu, X } from "lucide-react"
 
+
+
+import { useAuth } from "@clerk/nextjs"
+import { UserButton } from "@clerk/clerk-react"
 
 
 const featuredProducts = [
@@ -68,7 +73,11 @@ const subscriptionPlans = [
 ]
 
 export default function HomePage() {
+
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
+    const { userId } = useAuth()
+
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-green-50 to-white">
@@ -95,10 +104,20 @@ export default function HomePage() {
                             <Link href="/about" className="text-gray-700 hover:text-green-600 transition-colors">
                                 About
                             </Link>
-                            <Button variant="outline" className="border-green-600 text-green-600 hover:bg-green-50">
-                                Sign In
-                            </Button>
-                            <Button className="bg-green-600 hover:bg-green-700">Get Started</Button>
+
+                            {!userId ?
+                                <>
+                                    <Link href={'/sign-in'} className="border-green-600 text-green-600 hover:bg-green-50">
+                                        Sign In
+                                    </Link>
+                                    <Button asChild className="bg-green-600 hover:bg-green-700">
+                                        <Link href={'/sign-in'} className="border-green-600 text-green-600 hover:bg-green-50">
+                                            Get Started
+                                        </Link>
+                                    </Button>
+                                </> :
+                                <UserButton />
+                            }
                         </div>
 
                         {/* Mobile Menu Button */}
@@ -122,19 +141,22 @@ export default function HomePage() {
                             <Link href="/about" className="text-gray-700 hover:text-green-600 w-full" onClick={() => setMobileMenuOpen(false)}>
                                 About
                             </Link>
-                            <Button
-                                variant="outline"
-                                className="w-full border-green-600 text-green-600 hover:bg-green-50"
-                                onClick={() => setMobileMenuOpen(false)}
-                            >
-                                Sign In
-                            </Button>
-                            <Button
-                                className="w-full bg-green-600 hover:bg-green-700"
-                                onClick={() => setMobileMenuOpen(false)}
-                            >
-                                Get Started
-                            </Button>
+                           
+                   
+
+                            {!userId ?
+                                <>
+                                    <Link href={'/sign-in'} className="border-green-600 text-green-600 hover:bg-green-50">
+                                        Sign In
+                                    </Link>
+                                    <Button asChild className="bg-green-600 hover:bg-green-700">
+                                        <Link href={'/sign-in'} className="border-green-600 text-green-600 hover:bg-green-50">
+                                            Get Started
+                                        </Link>
+                                    </Button>
+                                </> :
+                                <UserButton />
+                            }
                         </div>
                     )}
                 </div>
