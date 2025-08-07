@@ -1,5 +1,7 @@
+
 'use client';
 
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -16,7 +18,9 @@ import {
     FormMessage,
 } from '@/components/ui/form';
 
-// ✅ Zod Schema
+import { X } from 'lucide-react';
+
+// ✅ Schema
 const formSchema = z.object({
     name: z.string().min(1, 'Product name is required'),
     description: z.string().min(1, 'Description is required'),
@@ -25,7 +29,11 @@ const formSchema = z.object({
         .refine((val) => !isNaN(Number(val)) && Number(val) > 0, {
             message: 'Price must be a positive number',
         }),
-    image: z.string().url('Must be a valid image URL'),
+    images: z
+        .any()
+        .refine((files) => Array.isArray(files) && files.length > 0, {
+            message: 'At least one image is required',
+        }),
     quantity: z
         .string()
         .refine((val) => Number.isInteger(Number(val)) && Number(val) >= 0, {
@@ -34,24 +42,24 @@ const formSchema = z.object({
     category: z.string().min(1, 'Category is required'),
 });
 
-// ✅ Inferred Type
 type ProductFormValues = z.infer<typeof formSchema>;
 
 export default function CreateProductForm() {
+    const [imageFiles, setImageFiles] = useState<File[]>([]);
+
     const form = useForm<ProductFormValues>({
         resolver: zodResolver(formSchema),
         defaultValues: {
             name: '',
             description: '',
             price: '',
-            image: '',
+            images: [],
             quantity: '',
             category: '',
         },
     });
 
     const onSubmit = (values: ProductFormValues) => {
-        // Convert to correct types
         const data = {
             ...values,
             price: Number(values.price),
@@ -59,16 +67,33 @@ export default function CreateProductForm() {
         };
 
         console.log('Validated & Parsed Form Data:', data);
-        // Add API call here
+        // Handle API/form submission here
+    };
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = Array.from(e.target.files || []);
+        const updatedFiles = [...imageFiles, ...files];
+        setImageFiles(updatedFiles);
+        form.setValue('images', updatedFiles);
+    };
+
+    const handleFileDelete = (index: number) => {
+        const updatedFiles = [...imageFiles];
+        updatedFiles.splice(index, 1);
+        setImageFiles(updatedFiles);
+        form.setValue('images', updatedFiles);
     };
 
     return (
         <div className="space-y-6 p-4">
-            <DialogTitle className="text-2xl font-semibold text-center">Create Product</DialogTitle>
+            <DialogTitle className="text-2xl font-semibold text-center">
+                Create Product
+            </DialogTitle>
 
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
-                    {(['name', 'description', 'price', 'image', 'quantity', 'category'] as const).map((field) => (
+                    {/* Text Fields */}
+                    {(['name', 'description', 'price', 'quantity', 'category'] as const).map((field) => (
                         <FormField
                             key={field}
                             control={form.control}
@@ -88,6 +113,48 @@ export default function CreateProductForm() {
                             )}
                         />
                     ))}
+
+                    {/* Multiple Image Upload */}
+                    <FormField
+                        control={form.control}
+                        name="images"
+                        render={() => (
+                            <FormItem>
+                                <FormLabel>Product Images</FormLabel>
+                                <FormControl>
+                                    <Input
+                                        type="file"
+                                        accept="image/*"
+                                        multiple
+                                        onChange={handleFileChange}
+                                    />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+
+                    {/* File Name Preview List with Delete Button */}
+                    {imageFiles.length > 0 && (
+                        <div className="space-y-2">
+                            {imageFiles.map((file, idx) => (
+                                <div
+                                    key={idx}
+                                    className="flex items-center justify-between border rounded px-3 py-2 text-sm bg-muted"
+                                >
+                                    <span className="truncate">{file.name}</span>
+                                    <button
+                                        type="button"
+                                        onClick={() => handleFileDelete(idx)}
+                                        className="text-red-500 hover:text-red-700"
+                                        title="Remove file"
+                                    >
+                                        <X size={16} />
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
 
                     <Button type="submit" className="w-full">
                         Submit Product
