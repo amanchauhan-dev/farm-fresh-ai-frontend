@@ -1,49 +1,99 @@
 'use client';
 
-import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
 import { DialogTitle } from '@/components/ui/dialog';
+import {
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
+} from '@/components/ui/form';
+
+// ✅ Zod Schema
+const formSchema = z.object({
+    name: z.string().min(1, 'Product name is required'),
+    description: z.string().min(1, 'Description is required'),
+    price: z
+        .string()
+        .refine((val) => !isNaN(Number(val)) && Number(val) > 0, {
+            message: 'Price must be a positive number',
+        }),
+    image: z.string().url('Must be a valid image URL'),
+    quantity: z
+        .string()
+        .refine((val) => Number.isInteger(Number(val)) && Number(val) >= 0, {
+            message: 'Quantity must be a non-negative integer',
+        }),
+    category: z.string().min(1, 'Category is required'),
+});
+
+// ✅ Inferred Type
+type ProductFormValues = z.infer<typeof formSchema>;
 
 export default function CreateProductForm() {
-    const [form, setForm] = useState({
-        name: '',
-        description: '',
-        price: '',
-        image: '',
-        quantity: '',
-        category: '',
+    const form = useForm<ProductFormValues>({
+        resolver: zodResolver(formSchema),
+        defaultValues: {
+            name: '',
+            description: '',
+            price: '',
+            image: '',
+            quantity: '',
+            category: '',
+        },
     });
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setForm({ ...form, [e.target.name]: e.target.value });
-    };
+    const onSubmit = (values: ProductFormValues) => {
+        // Convert to correct types
+        const data = {
+            ...values,
+            price: Number(values.price),
+            quantity: Number(values.quantity),
+        };
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        console.log(form); // Replace with API call
+        console.log('Validated & Parsed Form Data:', data);
+        // Add API call here
     };
 
     return (
-        <>
-            <DialogTitle>Create Product</DialogTitle>
-            <form onSubmit={handleSubmit} className="space-y-4">
-                {(['name', 'description', 'price', 'image', 'quantity', 'category'] as const).map((field) => (
-                    <div key={field}>
-                        <Label htmlFor={field}>{field.charAt(0).toUpperCase() + field.slice(1)}</Label>
-                        <Input
-                            id={field}
+        <div className="space-y-6 p-4">
+            <DialogTitle className="text-2xl font-semibold text-center">Create Product</DialogTitle>
+
+            <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+                    {(['name', 'description', 'price', 'image', 'quantity', 'category'] as const).map((field) => (
+                        <FormField
+                            key={field}
+                            control={form.control}
                             name={field}
-                            value={form[field]}
-                            onChange={handleChange}
-                            required
-                            type={field === 'price' || field === 'quantity' ? 'number' : 'text'}
+                            render={({ field: f }) => (
+                                <FormItem>
+                                    <FormLabel className="capitalize">{field}</FormLabel>
+                                    <FormControl>
+                                        <Input
+                                            {...f}
+                                            type={field === 'price' || field === 'quantity' ? 'number' : 'text'}
+                                            placeholder={`Enter ${field}`}
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
                         />
-                    </div>
-                ))}
-                <Button type="submit">Create</Button>
-            </form>
-        </>
+                    ))}
+
+                    <Button type="submit" className="w-full">
+                        Submit Product
+                    </Button>
+                </form>
+            </Form>
+        </div>
     );
 }

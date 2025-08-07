@@ -1,9 +1,32 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+
+const formSchema = z.object({
+    name: z.string().min(1, 'Product name is required'),
+    description: z.string().min(1, 'Description is required'),
+    price: z
+        .string()
+        .refine((val) => !isNaN(Number(val)) && Number(val) > 0, {
+            message: 'Price must be a positive number',
+        }),
+    image: z.string().url('Must be a valid image URL'),
+    quantity: z
+        .string()
+        .refine((val) => Number.isInteger(Number(val)) && Number(val) >= 0, {
+            message: 'Quantity must be a non-negative integer',
+        }),
+    category: z.string().min(1, 'Category is required'),
+});
+
+type ProductFormValues = z.infer<typeof formSchema>;
 
 type Product = {
     id: string;
@@ -16,43 +39,78 @@ type Product = {
 };
 
 export default function UpdateProductForm({ product }: { product: Product | null }) {
-    const [form, setForm] = useState<Product | null>(null);
+    const form = useForm<ProductFormValues>({
+        resolver: zodResolver(formSchema),
+        defaultValues: {
+            name: '',
+            description: '',
+            price: '',
+            image: '',
+            quantity: '',
+            category: '',
+        },
+    });
 
+    // Populate form when product is available
     useEffect(() => {
-        setForm(product);
-    }, [product]);
+        if (product) {
+            form.reset({
+                name: product.name,
+                description: product.description,
+                price: product.price.toString(),
+                image: product.image,
+                quantity: product.quantity.toString(),
+                category: product.category,
+            });
+        }
+    }, [product, form]);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (!form) return;
-        setForm({ ...form, [e.target.name]: e.target.value });
+    const onSubmit = (values: ProductFormValues) => {
+        const updatedProduct = {
+            ...product,
+            ...values,
+            price: Number(values.price),
+            quantity: Number(values.quantity),
+        };
+
+        console.log('Updated Product:', updatedProduct);
+        // Call API here
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        console.log('Updating product: ', form); // Replace with API call
-    };
-
-    if (!form) return null;
+    if (!product) return null;
 
     return (
-        <>
+        <div className="space-y-6 p-4">
+            <h2 className="text-2xl font-semibold text-center">Update Product</h2>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-                {(['name', 'description', 'price', 'image', 'quantity', 'category'] as const).map((field) => (
-                    <div key={field}>
-                        <Label htmlFor={field}>{field.charAt(0).toUpperCase() + field.slice(1)}</Label>
-                        <Input
-                            id={field}
+            <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+                    {(['name', 'description', 'price', 'image', 'quantity', 'category'] as const).map((field) => (
+                        <FormField
+                            key={field}
+                            control={form.control}
                             name={field}
-                            value={form[field]}
-                            onChange={handleChange}
-                            required
-                            type={field === 'price' || field === 'quantity' ? 'number' : 'text'}
+                            render={({ field: f }) => (
+                                <FormItem>
+                                    <FormLabel className="capitalize">{field}</FormLabel>
+                                    <FormControl>
+                                        <Input
+                                            {...f}
+                                            type={field === 'price' || field === 'quantity' ? 'number' : 'text'}
+                                            placeholder={`Enter ${field}`}
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
                         />
-                    </div>
-                ))}
-                <Button type="submit">Update</Button>
-            </form>
-        </>
+                    ))}
+
+                    <Button type="submit" className="w-full">
+                        Update Product
+                    </Button>
+                </form>
+            </Form>
+        </div>
     );
 }
