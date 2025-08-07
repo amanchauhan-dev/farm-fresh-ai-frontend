@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ClerkProvider } from '@clerk/nextjs'
+import Script from "next/script";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -28,10 +30,27 @@ export default function RootLayout({
     <ClerkProvider>
 
       <html lang="en" suppressHydrationWarning>
+        <head>
+          {/* Chatling config script */}
+          <Script id="chatling-config" strategy="beforeInteractive">
+            {`
+              window.chtlConfig = { chatbotId: "1619787521" };
+            `}
+          </Script>
+
+          {/* Chatling main embed script */}
+          <Script
+            id="chatling-script"
+            src="https://chatling.ai/js/embed.js"
+            strategy="lazyOnload"
+            data-id="1619787521"
+          />
+        </head>
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
           {children}
+
         </body>
       </html>
     </ClerkProvider>

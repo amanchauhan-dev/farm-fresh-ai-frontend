@@ -141,9 +141,6 @@ export default function HomePage() {
                             <Link href="/about" className="text-gray-700 hover:text-green-600 w-full" onClick={() => setMobileMenuOpen(false)}>
                                 About
                             </Link>
-
-
-
                             {!userId ?
                                 <>
                                     <Link href={'/sign-in'} className="border-green-600 text-green-600 hover:bg-green-50">
