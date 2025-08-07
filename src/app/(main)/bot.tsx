@@ -23,7 +23,7 @@ function Bot({ headerRight }: { headerRight?: ReactNode }) {
 
 
     // Initialize AI chat once per component lifecycle
-    const ai = new GoogleGenAI({ apiKey: "AIzaSyCNvznfcm7fnSHjFgQMmH60MYjXHMyS_RI" });
+    const ai = new GoogleGenAI({ apiKey: process.env.NEXT_PUBLIC_GEMINI_API });
     const chat = ai.chats.create({
         model: "gemini-2.0-flash",
         history: [...TraingAIPublicData, ...messages.map((m) => ({
