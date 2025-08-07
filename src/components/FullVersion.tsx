@@ -1,9 +1,12 @@
+'use client'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Leaf, ShoppingCart, Truck, Users, Star, ArrowRight, CheckCircle } from 'lucide-react'
 import Link from "next/link"
 import Image from "next/image"
+import { useAuth } from "@clerk/nextjs"
+import { UserButton } from "@clerk/clerk-react"
 
 const featuredProducts = [
     {
@@ -63,6 +66,8 @@ const subscriptionPlans = [
 ]
 
 export default function HomePage() {
+    const { userId } = useAuth()
+
     return (
         <div className="min-h-screen bg-gradient-to-b from-green-50 to-white">
             {/* Navigation */}
@@ -83,12 +88,19 @@ export default function HomePage() {
                             <Link href="/about" className="text-gray-700 hover:text-green-600 transition-colors">
                                 About
                             </Link>
-                            <Button variant="outline" className="border-green-600 text-green-600 hover:bg-green-50">
-                                Sign In
-                            </Button>
-                            <Button className="bg-green-600 hover:bg-green-700">
-                                Get Started
-                            </Button>
+                            {!userId ?
+                                <>
+                                    <Link href={'/sign-in'} className="border-green-600 text-green-600 hover:bg-green-50">
+                                        Sign In
+                                    </Link>
+                                    <Button asChild className="bg-green-600 hover:bg-green-700">
+                                        <Link href={'/sign-in'} className="border-green-600 text-green-600 hover:bg-green-50">
+                                            Get Started
+                                        </Link>
+                                    </Button>
+                                </> :
+                                <UserButton />
+                            }
                         </div>
                     </div>
                 </div>
