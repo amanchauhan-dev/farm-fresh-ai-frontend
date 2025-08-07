@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Leaf, ShoppingCart, Truck, Users, Star, ArrowRight, CheckCircle } from 'lucide-react'
+import { Leaf, ShoppingCart, Truck, Users, Star, ArrowRight, CheckCircle, Bot } from 'lucide-react'
 import Link from "next/link"
 import Image from "next/image"
 
@@ -103,6 +103,9 @@ export default function HomePage() {
                             </Link>
                             <Link href="/about" className="text-gray-700 hover:text-green-600 transition-colors">
                                 About
+                            </Link>
+                            <Link href="/bot" className="text-gray-700 hover:text-green-600 transition-colors flex gap-1">
+                                Farm Bot <Bot />
                             </Link>
 
                             {!userId ?

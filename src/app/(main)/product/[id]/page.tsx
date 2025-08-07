@@ -131,7 +131,7 @@ export default function ProductPage() {
                         </div>
                         <div className="grid grid-cols-3 gap-2 md:gap-4">
                             {product.images.map((image, index) => (
-                                <button
+                                <Button
                                     key={index}
                                     onClick={() => setSelectedImage(index)}
                                     className={`aspect-square rounded-lg overflow-hidden border-2 transition-colors ${selectedImage === index ? 'border-green-500' : 'border-gray-200'
@@ -144,7 +144,7 @@ export default function ProductPage() {
                                         height={150}
                                         className="w-full h-full object-cover"
                                     />
-                                </button>
+                                </Button>
                             ))}
                         </div>
                     </div>
