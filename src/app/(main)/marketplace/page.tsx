@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Slider } from "@/components/ui/slider"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Search, Filter, Star, MapPin, ShoppingCart, Heart } from 'lucide-react'
+import { Search, Filter, Star, MapPin, ShoppingCart } from 'lucide-react'
 import Image from "next/image"
 import Link from "next/link"
 
@@ -160,24 +160,18 @@ export default function MarketplacePage() {
         return matchesSearch && matchesCategory && matchesLocation && matchesPrice && matchesOrganic && matchesStock
     }).sort((a, b) => {
         switch (sortBy) {
-            case "price-low":
-                return a.price - b.price
-            case "price-high":
-                return b.price - a.price
-            case "rating":
-                return b.rating - a.rating
-            case "name":
-                return a.name.localeCompare(b.name)
-            default:
-                return 0
+            case "price-low": return a.price - b.price
+            case "price-high": return b.price - a.price
+            case "rating": return b.rating - a.rating
+            case "name": return a.name.localeCompare(b.name)
+            default: return 0
         }
     })
 
     return (
         <div className="min-h-screen bg-gray-50">
-            {/* Navigation */}
-            <nav className="border-b bg-white sticky top-0 z-50">
-                <div className="container mx-auto px-4 py-4">
+            <nav className="border-b bg-white sticky top-0 z-50 shadow-sm">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
                     <div className="flex items-center justify-between">
                         <Link href="/" className="flex items-center space-x-2">
                             <div className="h-8 w-8 bg-green-600 rounded-full flex items-center justify-center">
@@ -186,23 +180,20 @@ export default function MarketplacePage() {
                             <span className="text-xl font-bold text-green-800">FarmFresh AI</span>
                         </Link>
                         <div className="flex items-center space-x-4">
-                            <Button variant="ghost" size="sm">
-                                <Heart className="h-4 w-4 mr-2" />
-                                Wishlist
-                            </Button>
-                            <Button variant="ghost" size="sm">
-                                <ShoppingCart className="h-4 w-4 mr-2" />
-                                Cart (0)
-                            </Button>
+                            <Link href='/cart'>
+                                <Button variant="ghost" size="sm">
+                                    <ShoppingCart className="h-4 w-4 mr-2" /> Cart (0)
+                                </Button>
+                            </Link>
                         </div>
                     </div>
                 </div>
             </nav>
 
-            <div className="container mx-auto px-4 py-8">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <div className="flex flex-col lg:flex-row gap-8">
                     {/* Filters Sidebar */}
-                    <div className="lg:w-1/4">
+                    <aside className="lg:w-1/4 w-full">
                         <Card className="sticky top-24">
                             <CardHeader>
                                 <div className="flex items-center space-x-2">
@@ -225,41 +216,33 @@ export default function MarketplacePage() {
                                     </div>
                                 </div>
 
-                                {/* Category */}
+                                {/* Category Filter */}
                                 <div>
                                     <label className="text-sm font-medium mb-2 block">Category</label>
                                     <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                                        <SelectTrigger>
-                                            <SelectValue />
-                                        </SelectTrigger>
+                                        <SelectTrigger><SelectValue /></SelectTrigger>
                                         <SelectContent>
                                             {categories.map(category => (
-                                                <SelectItem key={category} value={category}>
-                                                    {category}
-                                                </SelectItem>
+                                                <SelectItem key={category} value={category}>{category}</SelectItem>
                                             ))}
                                         </SelectContent>
                                     </Select>
                                 </div>
 
-                                {/* Location */}
+                                {/* Location Filter */}
                                 <div>
                                     <label className="text-sm font-medium mb-2 block">Location</label>
                                     <Select value={selectedLocation} onValueChange={setSelectedLocation}>
-                                        <SelectTrigger>
-                                            <SelectValue />
-                                        </SelectTrigger>
+                                        <SelectTrigger><SelectValue /></SelectTrigger>
                                         <SelectContent>
                                             {locations.map(location => (
-                                                <SelectItem key={location} value={location}>
-                                                    {location}
-                                                </SelectItem>
+                                                <SelectItem key={location} value={location}>{location}</SelectItem>
                                             ))}
                                         </SelectContent>
                                     </Select>
                                 </div>
 
-                                {/* Price Range */}
+                                {/* Price Slider */}
                                 <div>
                                     <label className="text-sm font-medium mb-2 block">
                                         Price Range: ${priceRange[0]} - ${priceRange[1]}
@@ -270,37 +253,27 @@ export default function MarketplacePage() {
                                         max={20}
                                         min={0}
                                         step={0.5}
-                                        className="mt-2"
                                     />
                                 </div>
 
                                 {/* Checkboxes */}
                                 <div className="space-y-3">
                                     <div className="flex items-center space-x-2">
-                                        <Checkbox
-                                            id="organic"
-                                            checked={organicOnly}
-                                            onCheckedChange={checked => setOrganicOnly(checked === true)}
-                                        />
+                                        <Checkbox id="organic" checked={organicOnly} onCheckedChange={v => setOrganicOnly(v === true)} />
                                         <label htmlFor="organic" className="text-sm">Organic Only</label>
                                     </div>
                                     <div className="flex items-center space-x-2">
-                                        <Checkbox
-                                            id="instock"
-                                            checked={inStockOnly}
-                                            onCheckedChange={checked => setInStockOnly(checked === true)}
-                                        />
+                                        <Checkbox id="instock" checked={inStockOnly} onCheckedChange={v => setInStockOnly(v === true)} />
                                         <label htmlFor="instock" className="text-sm">In Stock Only</label>
                                     </div>
                                 </div>
                             </CardContent>
                         </Card>
-                    </div>
+                    </aside>
 
-                    {/* Products Grid */}
-                    <div className="lg:w-3/4">
-                        {/* Sort and Results Header */}
-                        <div className="flex justify-between items-center mb-6">
+                    {/* Product Grid */}
+                    <main className="lg:w-3/4 w-full">
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
                             <h1 className="text-2xl font-bold text-gray-900">
                                 Fresh Produce Marketplace
                                 <span className="text-sm font-normal text-gray-500 ml-2">
@@ -308,9 +281,7 @@ export default function MarketplacePage() {
                                 </span>
                             </h1>
                             <Select value={sortBy} onValueChange={setSortBy}>
-                                <SelectTrigger className="w-48">
-                                    <SelectValue placeholder="Sort by" />
-                                </SelectTrigger>
+                                <SelectTrigger className="w-48"><SelectValue placeholder="Sort by" /></SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="rating">Highest Rated</SelectItem>
                                     <SelectItem value="price-low">Price: Low to High</SelectItem>
@@ -320,8 +291,7 @@ export default function MarketplacePage() {
                             </Select>
                         </div>
 
-                        {/* Products Grid */}
-                        <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
+                        <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-6">
                             {filteredProducts.map((product) => (
                                 <Card key={product.id} className="hover:shadow-lg transition-shadow bg-white">
                                     <CardHeader className="p-0">
@@ -334,19 +304,15 @@ export default function MarketplacePage() {
                                                 className="w-full h-48 object-cover rounded-t-lg"
                                             />
                                             <div className="absolute top-2 left-2 flex flex-col gap-1">
-                                                {product.organic && (
-                                                    <Badge className="bg-green-600 text-white">Organic</Badge>
-                                                )}
-                                                {!product.inStock && (
-                                                    <Badge variant="destructive">Out of Stock</Badge>
-                                                )}
+                                                {product.organic && <Badge className="bg-green-600 text-white">Organic</Badge>}
+                                                {!product.inStock && <Badge variant="destructive">Out of Stock</Badge>}
                                             </div>
                                             <Button
                                                 size="sm"
                                                 variant="ghost"
                                                 className="absolute top-2 right-2 h-8 w-8 p-0 bg-white/80 hover:bg-white"
                                             >
-                                                <Heart className="h-4 w-4" />
+                                                <ShoppingCart className="h-4 w-4" />
                                             </Button>
                                         </div>
                                     </CardHeader>
@@ -400,9 +366,10 @@ export default function MarketplacePage() {
                                 <p className="text-gray-600">Try adjusting your filters or search terms.</p>
                             </div>
                         )}
-                    </div>
+                    </main>
                 </div>
             </div>
         </div>
     )
 }
+
