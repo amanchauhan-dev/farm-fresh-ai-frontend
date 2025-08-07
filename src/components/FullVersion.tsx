@@ -1,9 +1,14 @@
+'use client'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Leaf, ShoppingCart, Truck, Users, Star, ArrowRight, CheckCircle } from 'lucide-react'
 import Link from "next/link"
 import Image from "next/image"
+import { useState } from "react"
+import { Menu, X } from "lucide-react"
+
+
 
 const featuredProducts = [
     {
@@ -63,16 +68,23 @@ const subscriptionPlans = [
 ]
 
 export default function HomePage() {
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
     return (
         <div className="min-h-screen bg-gradient-to-b from-green-50 to-white">
             {/* Navigation */}
+
+
             <nav className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
                 <div className="container mx-auto px-4 py-4">
                     <div className="flex items-center justify-between">
+                        {/* Logo */}
                         <div className="flex items-center space-x-2">
                             <Leaf className="h-8 w-8 text-green-600" />
                             <span className="text-2xl font-bold text-green-800">FarmFresh AI</span>
                         </div>
+
+                        {/* Desktop Menu */}
                         <div className="hidden md:flex items-center space-x-6">
                             <Link href="/marketplace" className="text-gray-700 hover:text-green-600 transition-colors">
                                 Marketplace
@@ -86,13 +98,48 @@ export default function HomePage() {
                             <Button variant="outline" className="border-green-600 text-green-600 hover:bg-green-50">
                                 Sign In
                             </Button>
-                            <Button className="bg-green-600 hover:bg-green-700">
+                            <Button className="bg-green-600 hover:bg-green-700">Get Started</Button>
+                        </div>
+
+                        {/* Mobile Menu Button */}
+                        <button
+                            className="md:hidden text-green-600"
+                            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                        >
+                            {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+                        </button>
+                    </div>
+
+                    {/* Mobile Menu Content */}
+                    {mobileMenuOpen && (
+                        <div className="md:hidden mt-4 space-y-4 flex flex-col items-start">
+                            <Link href="/marketplace" className="text-gray-700 hover:text-green-600 w-full" onClick={() => setMobileMenuOpen(false)}>
+                                Marketplace
+                            </Link>
+                            <Link href="/subscription" className="text-gray-700 hover:text-green-600 w-full" onClick={() => setMobileMenuOpen(false)}>
+                                Subscription
+                            </Link>
+                            <Link href="/about" className="text-gray-700 hover:text-green-600 w-full" onClick={() => setMobileMenuOpen(false)}>
+                                About
+                            </Link>
+                            <Button
+                                variant="outline"
+                                className="w-full border-green-600 text-green-600 hover:bg-green-50"
+                                onClick={() => setMobileMenuOpen(false)}
+                            >
+                                Sign In
+                            </Button>
+                            <Button
+                                className="w-full bg-green-600 hover:bg-green-700"
+                                onClick={() => setMobileMenuOpen(false)}
+                            >
                                 Get Started
                             </Button>
                         </div>
-                    </div>
+                    )}
                 </div>
             </nav>
+
 
             {/* Hero Section */}
             <section className="py-20 px-4">

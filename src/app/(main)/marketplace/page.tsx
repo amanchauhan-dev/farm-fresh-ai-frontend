@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -8,161 +8,77 @@ import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Slider } from "@/components/ui/slider"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Search, Filter, Star, MapPin, ShoppingCart } from 'lucide-react'
+import { Search, Filter, MapPin, ShoppingCart } from 'lucide-react'
 import Image from "next/image"
 import Link from "next/link"
 
-// Dummy data for products
-const products = [
-    {
-        id: 1,
-        name: "Organic Tomatoes",
-        farmer: "Green Valley Farm",
-        location: "California",
-        price: 4.99,
-        unit: "lb",
-        image: "/placeholder.svg?key=2pfqu",
-        rating: 4.8,
-        reviews: 124,
-        category: "Vegetables",
-        inStock: true,
-        organic: true,
-        description: "Vine-ripened organic tomatoes, perfect for salads and cooking."
-    },
-    {
-        id: 2,
-        name: "Fresh Spinach",
-        farmer: "Sunny Acres",
-        location: "Oregon",
-        price: 3.49,
-        unit: "bunch",
-        image: "/placeholder.svg?key=pt9mk",
-        rating: 4.9,
-        reviews: 89,
-        category: "Vegetables",
-        inStock: true,
-        organic: true,
-        description: "Crisp, fresh spinach leaves packed with nutrients."
-    },
-    {
-        id: 3,
-        name: "Farm Eggs",
-        farmer: "Happy Hen Farm",
-        location: "Vermont",
-        price: 6.99,
-        unit: "dozen",
-        image: "/placeholder.svg?key=l0h08",
-        rating: 4.7,
-        reviews: 156,
-        category: "Dairy & Eggs",
-        inStock: true,
-        organic: false,
-        description: "Free-range eggs from happy, healthy hens."
-    },
-    {
-        id: 4,
-        name: "Organic Carrots",
-        farmer: "Root & Branch Farm",
-        location: "Washington",
-        price: 2.99,
-        unit: "lb",
-        image: "/placeholder.svg?key=c52ru",
-        rating: 4.6,
-        reviews: 78,
-        category: "Vegetables",
-        inStock: true,
-        organic: true,
-        description: "Sweet, crunchy organic carrots perfect for snacking."
-    },
-    {
-        id: 5,
-        name: "Fresh Strawberries",
-        farmer: "Berry Bliss Farm",
-        location: "California",
-        price: 5.99,
-        unit: "pint",
-        image: "/placeholder.svg?key=a0e4a",
-        rating: 4.9,
-        reviews: 203,
-        category: "Fruits",
-        inStock: true,
-        organic: true,
-        description: "Juicy, sweet strawberries picked at peak ripeness."
-    },
-    {
-        id: 6,
-        name: "Artisan Cheese",
-        farmer: "Mountain View Dairy",
-        location: "Wisconsin",
-        price: 12.99,
-        unit: "8oz",
-        image: "/placeholder.svg?key=ti2yy",
-        rating: 4.8,
-        reviews: 67,
-        category: "Dairy & Eggs",
-        inStock: false,
-        organic: false,
-        description: "Handcrafted artisan cheese made from grass-fed cows."
-    },
-    {
-        id: 7,
-        name: "Organic Apples",
-        farmer: "Orchard Hills",
-        location: "New York",
-        price: 3.99,
-        unit: "lb",
-        image: "/placeholder.svg?key=dn8v3",
-        rating: 4.7,
-        reviews: 145,
-        category: "Fruits",
-        inStock: true,
-        organic: true,
-        description: "Crisp, sweet organic apples from heritage trees."
-    },
-    {
-        id: 8,
-        name: "Fresh Herbs Mix",
-        farmer: "Herb Haven",
-        location: "Colorado",
-        price: 4.49,
-        unit: "pack",
-        image: "/placeholder.svg?key=tds6d",
-        rating: 4.5,
-        reviews: 92,
-        category: "Herbs",
-        inStock: true,
-        organic: true,
-        description: "Fresh herb mix including basil, parsley, and cilantro."
-    }
-]
-
 const categories = ["All", "Vegetables", "Fruits", "Dairy & Eggs", "Herbs"]
-const locations = ["All Locations", "California", "Oregon", "Vermont", "Washington", "Wisconsin", "New York", "Colorado"]
+
+type Product = {
+    id: number
+    name: string
+    category: string
+    price: number
+    inStock: boolean
+    image: string
+    description: string
+    farmer: string
+}
 
 export default function MarketplacePage() {
+    const [products, setProducts] = useState<Product[]>([])
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState("")
+
     const [searchTerm, setSearchTerm] = useState("")
     const [selectedCategory, setSelectedCategory] = useState("All")
-    const [selectedLocation, setSelectedLocation] = useState("All Locations")
-    const [priceRange, setPriceRange] = useState([0, 20])
-    const [organicOnly, setOrganicOnly] = useState(false)
+    const [priceRange, setPriceRange] = useState([0, 1000])
     const [inStockOnly, setInStockOnly] = useState(false)
-    const [sortBy, setSortBy] = useState("rating")
+    const [sortBy, setSortBy] = useState("rating") // fake field, fallback to name or price
+
+    useEffect(() => {
+        const fetchProducts = async () => {
+            try {
+                const res = await fetch("https://farm-fresh-backend-nmah.onrender.com/api/products/")
+                if (!res.ok) throw new Error("Failed to fetch products")
+
+                const data = await res.json()
+                console.log(data);
+
+                const mapped = data.map((p: any) => ({
+                    id: p.id,
+                    name: p.name,
+                    category: p.category,
+                    price: parseFloat(p.price),
+                    inStock: p.quantity > 0,
+                    image: p.image,
+                    description: p.description,
+                    farmer: `Farmer #${p.farmer}`
+                }))
+
+                setProducts(mapped)
+            } catch {
+                setError("Failed to load products.")
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        fetchProducts()
+    }, [])
 
     const filteredProducts = products.filter(product => {
         const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             product.farmer.toLowerCase().includes(searchTerm.toLowerCase())
-        const matchesCategory = selectedCategory === "All" || product.category === selectedCategory
-        const matchesLocation = selectedLocation === "All Locations" || product.location === selectedLocation
+        const matchesCategory = selectedCategory === "All" || product.category.toLowerCase() === selectedCategory.toLowerCase()
         const matchesPrice = product.price >= priceRange[0] && product.price <= priceRange[1]
-        const matchesOrganic = !organicOnly || product.organic
         const matchesStock = !inStockOnly || product.inStock
 
-        return matchesSearch && matchesCategory && matchesLocation && matchesPrice && matchesOrganic && matchesStock
+        return matchesSearch && matchesCategory && matchesPrice && matchesStock
     }).sort((a, b) => {
         switch (sortBy) {
             case "price-low": return a.price - b.price
             case "price-high": return b.price - a.price
-            case "rating": return b.rating - a.rating
             case "name": return a.name.localeCompare(b.name)
             default: return 0
         }
@@ -170,29 +86,26 @@ export default function MarketplacePage() {
 
     return (
         <div className="min-h-screen bg-gray-50">
+            {/* NAVBAR */}
             <nav className="border-b bg-white sticky top-0 z-50 shadow-sm">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-                    <div className="flex items-center justify-between">
-                        <Link href="/" className="flex items-center space-x-2">
-                            <div className="h-8 w-8 bg-green-600 rounded-full flex items-center justify-center">
-                                <span className="text-white font-bold text-sm">F</span>
-                            </div>
-                            <span className="text-xl font-bold text-green-800">FarmFresh AI</span>
-                        </Link>
-                        <div className="flex items-center space-x-4">
-                            <Link href='/cart'>
-                                <Button variant="ghost" size="sm">
-                                    <ShoppingCart className="h-4 w-4 mr-2" /> Cart (0)
-                                </Button>
-                            </Link>
+                <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+                    <Link href="/" className="flex items-center space-x-2">
+                        <div className="h-8 w-8 bg-green-600 rounded-full flex items-center justify-center">
+                            <span className="text-white font-bold text-sm">F</span>
                         </div>
-                    </div>
+                        <span className="text-xl font-bold text-green-800">FarmFresh AI</span>
+                    </Link>
+                    <Link href='/cart'>
+                        <Button variant="ghost" size="sm">
+                            <ShoppingCart className="h-4 w-4 mr-2" /> Cart (0)
+                        </Button>
+                    </Link>
                 </div>
             </nav>
 
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="max-w-7xl mx-auto px-4 py-8">
                 <div className="flex flex-col lg:flex-row gap-8">
-                    {/* Filters Sidebar */}
+                    {/* FILTER SIDEBAR */}
                     <aside className="lg:w-1/4 w-full">
                         <Card className="sticky top-24">
                             <CardHeader>
@@ -202,7 +115,6 @@ export default function MarketplacePage() {
                                 </div>
                             </CardHeader>
                             <CardContent className="space-y-6">
-                                {/* Search */}
                                 <div>
                                     <label className="text-sm font-medium mb-2 block">Search</label>
                                     <div className="relative">
@@ -216,7 +128,6 @@ export default function MarketplacePage() {
                                     </div>
                                 </div>
 
-                                {/* Category Filter */}
                                 <div>
                                     <label className="text-sm font-medium mb-2 block">Category</label>
                                     <Select value={selectedCategory} onValueChange={setSelectedCategory}>
@@ -229,39 +140,20 @@ export default function MarketplacePage() {
                                     </Select>
                                 </div>
 
-                                {/* Location Filter */}
-                                <div>
-                                    <label className="text-sm font-medium mb-2 block">Location</label>
-                                    <Select value={selectedLocation} onValueChange={setSelectedLocation}>
-                                        <SelectTrigger><SelectValue /></SelectTrigger>
-                                        <SelectContent>
-                                            {locations.map(location => (
-                                                <SelectItem key={location} value={location}>{location}</SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-
-                                {/* Price Slider */}
                                 <div>
                                     <label className="text-sm font-medium mb-2 block">
-                                        Price Range: ${priceRange[0]} - ${priceRange[1]}
+                                        Price Range: Rs{priceRange[0]} - Rs{priceRange[1]}
                                     </label>
                                     <Slider
                                         value={priceRange}
                                         onValueChange={setPriceRange}
-                                        max={20}
+                                        max={1000}
                                         min={0}
-                                        step={0.5}
+                                        step={10}
                                     />
                                 </div>
 
-                                {/* Checkboxes */}
                                 <div className="space-y-3">
-                                    <div className="flex items-center space-x-2">
-                                        <Checkbox id="organic" checked={organicOnly} onCheckedChange={v => setOrganicOnly(v === true)} />
-                                        <label htmlFor="organic" className="text-sm">Organic Only</label>
-                                    </div>
                                     <div className="flex items-center space-x-2">
                                         <Checkbox id="instock" checked={inStockOnly} onCheckedChange={v => setInStockOnly(v === true)} />
                                         <label htmlFor="instock" className="text-sm">In Stock Only</label>
@@ -271,7 +163,7 @@ export default function MarketplacePage() {
                         </Card>
                     </aside>
 
-                    {/* Product Grid */}
+                    {/* MAIN PRODUCT GRID */}
                     <main className="lg:w-3/4 w-full">
                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
                             <h1 className="text-2xl font-bold text-gray-900">
@@ -283,7 +175,6 @@ export default function MarketplacePage() {
                             <Select value={sortBy} onValueChange={setSortBy}>
                                 <SelectTrigger className="w-48"><SelectValue placeholder="Sort by" /></SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="rating">Highest Rated</SelectItem>
                                     <SelectItem value="price-low">Price: Low to High</SelectItem>
                                     <SelectItem value="price-high">Price: High to Low</SelectItem>
                                     <SelectItem value="name">Name: A to Z</SelectItem>
@@ -291,20 +182,23 @@ export default function MarketplacePage() {
                             </Select>
                         </div>
 
+                        {/* Loading/Error */}
+                        {loading && <p className="text-gray-500">Loading...</p>}
+                        {error && <p className="text-red-500">{error}</p>}
+
                         <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-6">
                             {filteredProducts.map((product) => (
                                 <Card key={product.id} className="hover:shadow-lg transition-shadow bg-white">
                                     <CardHeader className="p-0">
                                         <div className="relative">
                                             <Image
-                                                src={product.image || "/placeholder.svg"}
+                                                src={product.image}
                                                 alt={product.name}
                                                 width={300}
                                                 height={250}
                                                 className="w-full h-48 object-cover rounded-t-lg"
                                             />
-                                            <div className="absolute top-2 left-2 flex flex-col gap-1">
-                                                {product.organic && <Badge className="bg-green-600 text-white">Organic</Badge>}
+                                            <div className="absolute top-2 left-2">
                                                 {!product.inStock && <Badge variant="destructive">Out of Stock</Badge>}
                                             </div>
                                             <Button
@@ -317,29 +211,17 @@ export default function MarketplacePage() {
                                         </div>
                                     </CardHeader>
                                     <CardContent className="p-4">
-                                        <div className="flex justify-between items-start mb-2">
-                                            <h3 className="font-semibold text-lg">{product.name}</h3>
-                                            <div className="flex items-center">
-                                                <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                                                <span className="text-sm text-gray-600 ml-1">
-                                                    {product.rating} ({product.reviews})
-                                                </span>
-                                            </div>
-                                        </div>
-
-                                        <div className="flex items-center text-green-600 font-medium mb-2">
+                                        <h3 className="font-semibold text-lg mb-1">{product.name}</h3>
+                                        <div className="text-green-600 text-sm flex items-center mb-2">
                                             <MapPin className="h-4 w-4 mr-1" />
-                                            <span className="text-sm">{product.farmer}, {product.location}</span>
+                                            <span>{product.farmer}</span>
                                         </div>
-
                                         <p className="text-gray-600 text-sm mb-4 line-clamp-2">
                                             {product.description}
                                         </p>
-
                                         <div className="flex justify-between items-center">
                                             <span className="text-2xl font-bold text-gray-900">
                                                 ${product.price}
-                                                <span className="text-sm text-gray-500">/{product.unit}</span>
                                             </span>
                                             <Button
                                                 size="sm"
@@ -357,11 +239,9 @@ export default function MarketplacePage() {
                             ))}
                         </div>
 
-                        {filteredProducts.length === 0 && (
+                        {filteredProducts.length === 0 && !loading && (
                             <div className="text-center py-12">
-                                <div className="text-gray-400 mb-4">
-                                    <Search className="h-12 w-12 mx-auto" />
-                                </div>
+                                <Search className="h-12 w-12 mx-auto text-gray-400" />
                                 <h3 className="text-lg font-medium text-gray-900 mb-2">No products found</h3>
                                 <p className="text-gray-600">Try adjusting your filters or search terms.</p>
                             </div>
@@ -372,4 +252,3 @@ export default function MarketplacePage() {
         </div>
     )
 }
-
